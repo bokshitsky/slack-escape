@@ -1,3 +1,3 @@
-from slack_escape import main
+from slack_escape.main import main
 
 main()
