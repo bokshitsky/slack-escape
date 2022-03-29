@@ -11,7 +11,7 @@ def _parse_args():
 
     for module_info in walk_packages(slack_escape.operations.__path__, slack_escape.operations.__name__ + '.'):
         file_name = module_info.name.split('.')[-1]
-        print(import_module(module_info.name).Operation().configure_arg_parser(file_name, subparsers))
+        import_module(module_info.name).Operation().configure_arg_parser(file_name, subparsers)
 
     return parser.parse_args()
 

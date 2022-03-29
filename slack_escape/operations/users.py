@@ -1,4 +1,5 @@
 import csv
+import json
 
 from slack_escape.operations import AbstractSlackEscapeOperation
 
@@ -10,14 +11,32 @@ class Operation(AbstractSlackEscapeOperation):
         parser.add_argument(dest='file', type=str, help='users import csv file', nargs='?')
 
     def execute_task(self, args):
+        print(json.dumps({
+            "type": "version",
+            "version": 1
+        }))
         with open(args.file, "r") as csvfile:
-            reader = csv.DictReader(open(args.file, "r"))
+            reader = csv.DictReader(csvfile)
             for line in reader:
-                print(line)
-        # api = self.get_jira_api()
-        # user = self.get_user()
-        # found_issues = api.search_issues(f'(reporter = {user} or assignee = {user}) ORDER BY created DESC',
-        #                                  maxResults=args.limit)
-        # max_len = max(len(issue.permalink()) for issue in found_issues)
-        # for issue in found_issues:
-        #     print(f'{issue.permalink().ljust(max_len)} {issue.fields.summary[:80]}')
+                obj = {
+                    "type": "user",
+                    "user": {
+                        "username": line["username"],
+                        "email": line["email"],
+                        "auth_service": "",
+                        "password": "nenene",
+                        "nickname": line["displayname"],
+                        "first_name": line['fullname'].split(' ')[0],
+                        "last_name": "family",
+                        "position": "Senior Developer",
+                        "roles": "system_user",
+                        "teams": [
+                            {
+                                "name": "hhru",
+                                "roles": "team_admin team_user",
+                            }
+                        ]
+                    }
+                }
+
+                print(json.dumps(obj))
