@@ -13,14 +13,11 @@ class Operation(AbstractSlackEscapeOperation):
         self._add_token_param(parser)
         parser.add_argument('-c', dest='channel', default=None, help='channel to load')
         parser.add_argument('-l', dest='limit', default=300, help='limit messages')
-        parser.add_argument('-d', dest='direction', default='down', choices=('up', 'down', 'both'),
+        parser.add_argument('-d', dest='direction', default='both', choices=('up', 'down', 'both'),
                             help='scan direction')
 
     def execute_task(self, args):
-        client = self.get_slack_web_client(args)
-
         channel = self._get_channel(args)
-        channel_id = channel['id']
         channel_root = self.get_channel_root(args.channel)
         if not channel_root.exists():
             channel_root.mkdir()
@@ -76,7 +73,7 @@ class Operation(AbstractSlackEscapeOperation):
                         break
 
                     cursor = response.data['response_metadata']['next_cursor']
-        except (RuntimeError, KeyboardInterrupt):
+        except Exception:
             logging.exception('error during slack export')
 
         if actual_latest and actual_oldest:
@@ -111,11 +108,11 @@ class Operation(AbstractSlackEscapeOperation):
 
     def _get_channel(self, args):
         client = self.get_slack_web_client(args)
-        channels = client.conversations_list(exclude_archived=True, types='private_channel', limit=1000)['channels']
+        channels = client.conversations_list(types='private_channel', limit=1000)['channels']
 
         channel = next((c for c in channels if c['name'] == args.channel), None)
         if channel:
             return channel
 
-        channels = client.conversations_list(exclude_archived=True, types='public_channel', limit=1000)['channels']
+        channels = client.conversations_list(types='public_channel', limit=1000)['channels']
         return next((c for c in channels if c['name'] == args.channel), None)

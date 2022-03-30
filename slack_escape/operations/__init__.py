@@ -64,9 +64,9 @@ class AbstractSlackEscapeOperation:
             self.__slack_web_client = WebClient(
                 token=self.get_slack_token(args),
                 retry_handlers=[AlwaysRetryHandler(
-                    max_retry_count=5,
+                    max_retry_count=20,
                     interval_calculator=BackoffRetryIntervalCalculator(
-                        backoff_factor=8.0,
+                        backoff_factor=1.0,
                     )
                 )]
             )

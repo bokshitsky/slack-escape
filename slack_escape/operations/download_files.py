@@ -26,7 +26,7 @@ class Operation(AbstractSlackEscapeOperation):
 
             try:
                 file_location = files_root.joinpath(file_name)
-                logging.info(f'processing {file_name}, dt={file_task["x-dt"]}')
+                logging.info(f'{index} processing {file_name}, dt={file_task["x-dt"]}')
                 if file_location.exists():
                     logging.info(f'file {file_name} () exists, skipping')
                     task_queue.task_done()
@@ -37,15 +37,18 @@ class Operation(AbstractSlackEscapeOperation):
                     task_queue.task_done()
                     continue
 
-                async with aiohttp.ClientSession(headers={'Authorization': f'Bearer {token}'}) as session:
+                timeout = aiohttp.client.ClientTimeout(15, 2)
+                async with aiohttp.ClientSession(headers={'Authorization': f'Bearer {token}'},
+                                                 timeout=timeout) as session:
                     async with session.get(file_task['url_private_download']) as resp:
                         content = await resp.read()
                         with file_location.open("wb") as f:
                             f.write(content)
+            except asyncio.TimeoutError:
+                logging.warning(f'got timeout for file {file_name}')
 
-            except RuntimeError:
-                logging.exception(f'error on file {file_task} download')
-                await task_queue.put(file_task)
+            except Exception:
+                logging.exception(f'{index} error on file {file_task} download')
 
             task_queue.task_done()
 
@@ -83,70 +86,3 @@ class Operation(AbstractSlackEscapeOperation):
 
     def execute_task(self, args):
         asyncio.run(self.main(args))
-
-        # asyncio.run(main(self.get_slack_token(args)))
-# client = self.get_slack_web_client(args)
-#
-# channel = self._get_channel(args)
-# channel_id = channel['id']
-# channels_root = self.get_slack_export_root().joinpath("channels")
-# if not channels_root.exists():
-#     channels_root.mkdir()
-#
-# channel_root = channels_root.joinpath(args.channel)
-# if not channel_root.exists():
-#     channel_root.mkdir()
-#
-# latest, oldest = self.get_latest_and_oldest_ts(args, channel_root)
-#
-# cursor, actual_latest, actual_oldest = None, None, None
-# tmp_path = channel_root.joinpath('_tmp')
-#
-# try:
-#     with tmp_path.open("w+") as tmp:
-#         for _ in range(100000):
-#             response = client.conversations_history(channel=channel_id,
-#                                                     limit=args.limit,
-#                                                     cursor=cursor,
-#                                                     latest=latest,
-#                                                     oldest=oldest)
-#
-#             messages = response.get('messages')
-#             if not messages:
-#                 break
-#
-#             if actual_latest is None:
-#                 actual_latest = messages[0]['ts']
-#
-#             for message in messages:
-#                 replies_response = None
-#                 if message.get('thread_ts') and message.get('reply_count'):
-#                     replies_response = client.conversations_replies(channel=channel_id,
-#                                                                     ts=message.get('thread_ts'),
-#                                                                     limit=500)
-#                 actual_oldest = message['ts']
-#                 message['x-dt'] = str(datetime.fromtimestamp(float(actual_oldest)))
-#                 json.dump(message, tmp, ensure_ascii=False)
-#                 tmp.write('\n')
-#                 if replies_response is not None:
-#                     for i, reply in enumerate(replies_response['messages'], 1):
-#                         reply['x-reply-number'] = i
-#                         reply['x-dt'] = str(datetime.fromtimestamp(float(message['ts'])))
-#                         json.dump(reply, tmp, ensure_ascii=False)
-#                         tmp.write('\n')
-#             logging.info(
-#                 f'processed {actual_latest}-{actual_oldest} ({datetime.fromtimestamp(float(actual_oldest))})'
-#             )
-#             if not response.data.get('has_more', False):
-#                 break
-#
-#             cursor = response.data['response_metadata']['next_cursor']
-# except (RuntimeError, KeyboardInterrupt):
-#     logging.exception('error during slack export')
-#
-# if actual_latest and actual_oldest:
-#     new_path = channel_root.joinpath(f'{actual_latest}-{actual_oldest}.jsonl')
-#     logging.info(f'rename {tmp_path} to {new_path}')
-#     tmp_path.rename(channel_root.joinpath(new_path))
-# else:
-#     logging.info(f'no messages found')
