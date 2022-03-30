@@ -49,6 +49,12 @@ class AbstractSlackEscapeOperation:
             self.__slack_export_root = path
         return self.__slack_export_root
 
+    def get_channel_root(self, channel_name: str) -> pathlib.Path:
+        channels_root = self.get_slack_export_root().joinpath("channels")
+        if not channels_root.exists():
+            channels_root.mkdir()
+        return channels_root.joinpath(channel_name)
+
     def _add_token_param(self, parser):
         parser.add_argument('-t', dest='token', default=None,
                             help='[optional] slack user token. "SLACK_EXPORT_ROOT_PATH" env var is used if omitted')

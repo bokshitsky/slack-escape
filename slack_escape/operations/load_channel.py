@@ -13,7 +13,7 @@ class Operation(AbstractSlackEscapeOperation):
         self._add_token_param(parser)
         parser.add_argument('-c', dest='channel', default=None, help='channel to load')
         parser.add_argument('-l', dest='limit', default=300, help='limit messages')
-        parser.add_argument('-d', dest='direction', default='down', choices=('up', 'down'),
+        parser.add_argument('-d', dest='direction', default='down', choices=('up', 'down', 'both'),
                             help='scan direction')
 
     def execute_task(self, args):
@@ -21,19 +21,22 @@ class Operation(AbstractSlackEscapeOperation):
 
         channel = self._get_channel(args)
         channel_id = channel['id']
-        channels_root = self.get_slack_export_root().joinpath("channels")
-        if not channels_root.exists():
-            channels_root.mkdir()
-
-        channel_root = channels_root.joinpath(args.channel)
+        channel_root = self.get_channel_root(args.channel)
         if not channel_root.exists():
             channel_root.mkdir()
 
         latest, oldest = self.get_latest_and_oldest_ts(args, channel_root)
 
+        if args.direction in ('both', 'down'):
+            self.perform_messages_save(args, channel_root, channel['id'], latest, None)  # down side
+
+        if args.direction in ('both', 'up') and oldest:
+            self.perform_messages_save(args, channel_root, channel['id'], None, oldest)  # up side
+
+    def perform_messages_save(self, args, channel_root, channel_id, latest, oldest):
         cursor, actual_latest, actual_oldest = None, None, None
         tmp_path = channel_root.joinpath('_tmp')
-
+        client = self.get_slack_web_client(args)
         try:
             with tmp_path.open("w+") as tmp:
                 for _ in range(100000):
@@ -84,10 +87,26 @@ class Operation(AbstractSlackEscapeOperation):
             logging.info(f'no messages found')
 
     def get_latest_and_oldest_ts(self, args, channel_root: Path):
-        ts = self._get_limit_ts(args, channel_root)
+        files = list(channel_root.glob("*.jsonl"))
+        if not files:
+            return None, None
+
+        if args.direction == 'both':
+            return (
+                min([f.stem.split('-')[1].replace('_', '.') for f in files], key=float),
+                max([f.stem.split('-')[0].replace('_', '.') for f in files], key=float)
+            )
         if args.direction == 'down':
-            return ts, None
-        return None, ts
+            return (
+                min([f.stem.split('-')[1].replace('_', '.') for f in files], key=float),
+                None
+            )
+        if args.direction == 'up':
+            return (
+                None,
+                max([f.stem.split('-')[0].replace('_', '.') for f in files], key=float)
+            )
+        raise RuntimeError(f'not supported args {args}')
 
     def _get_channel(self, args):
         client = self.get_slack_web_client(args)
@@ -99,12 +118,3 @@ class Operation(AbstractSlackEscapeOperation):
 
         channels = client.conversations_list(exclude_archived=True, types='public_channel', limit=1000)['channels']
         return next((c for c in channels if c['name'] == args.channel), None)
-
-    def _get_limit_ts(self, args, channel_root: Path):
-        files = list(channel_root.glob("*.jsonl"))
-        if not files:
-            return None
-
-        if args.direction == 'down':
-            return min([f.stem.split('-')[1].replace('_', '.') for f in files], key=float)
-        return max([f.stem.split('-')[0].replace('_', '.') for f in files], key=float)
