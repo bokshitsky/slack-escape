@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import pathlib
@@ -74,6 +75,13 @@ class AbstractSlackEscapeOperation:
 
     def get_slack_token(self, args):
         return args.token if args.token else os.environ['SLACK_USER_TOKEN']
+
+    def get_users_path(self):
+        return self.get_slack_export_root().joinpath('users.json')
+
+    def get_users(self):
+        with self.get_users_path().open('r') as f:
+            return json.load(f)
 
 
 class AlwaysRetryHandler(RetryHandler):

@@ -67,21 +67,22 @@ class Operation(AbstractSlackEscapeOperation):
                                 json.dump(reply, tmp, ensure_ascii=False)
                                 tmp.write('\n')
                     logging.info(
-                        f'processed {actual_latest}-{actual_oldest} ({datetime.fromtimestamp(float(actual_oldest))})'
+                        f'{args.channel}: processed {actual_latest}-{actual_oldest} ('
+                        f'{datetime.fromtimestamp(float(actual_oldest))})'
                     )
                     if not response.data.get('has_more', False):
                         break
 
                     cursor = response.data['response_metadata']['next_cursor']
         except Exception:
-            logging.exception('error during slack export')
+            logging.exception('{args.channel}: error during slack export')
 
         if actual_latest and actual_oldest:
             new_path = channel_root.joinpath(f'{actual_latest}-{actual_oldest}.jsonl')
-            logging.info(f'rename {tmp_path} to {new_path}')
+            logging.info(f'{args.channel}: rename {tmp_path} to {new_path}')
             tmp_path.rename(channel_root.joinpath(new_path))
         else:
-            logging.info(f'no messages found')
+            logging.info(f'{args.channel}: no messages found')
             tmp_path.unlink()
 
     def get_latest_and_oldest_ts(self, args, channel_root: Path):
