@@ -85,6 +85,7 @@ class Operation(AbstractSlackEscapeOperation):
             tmp_path.rename(channel_root.joinpath(new_path))
         else:
             logging.info(f'no messages found')
+            tmp_path.unlink()
 
     def get_latest_and_oldest_ts(self, args, channel_root: Path):
         files = list(channel_root.glob("*.jsonl"))
