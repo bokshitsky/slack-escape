@@ -5,7 +5,7 @@ from slack_escape.operations import AbstractSlackEscapeOperation
 
 
 class Operation(AbstractSlackEscapeOperation):
-    description = "convert users to json"
+    description = "convert users from exported csv to json"
 
     def configure_subparser(self, parser):
         parser.add_argument(dest='file', type=str, help='users to convert csv file', nargs='?')

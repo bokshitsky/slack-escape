@@ -74,7 +74,7 @@ class Operation(AbstractSlackEscapeOperation):
                         break
 
                     cursor = response.data['response_metadata']['next_cursor']
-        except Exception:
+        except (Exception, KeyboardInterrupt):
             logging.exception('{args.channel}: error during slack export')
 
         if actual_latest and actual_oldest:
