@@ -6,6 +6,7 @@ import sys
 from logging import root
 from typing import Optional
 
+import cyrtranslit
 from slack_sdk import WebClient
 from slack_sdk.http_retry import RetryHandler, RetryState, HttpRequest, HttpResponse
 from slack_sdk.http_retry.builtin_interval_calculators import BackoffRetryIntervalCalculator
@@ -82,6 +83,9 @@ class AbstractSlackEscapeOperation:
     def get_users(self):
         with self.get_users_path().open('r') as f:
             return json.load(f)
+
+    def get_channel_new_name(self, old_name):
+        return cyrtranslit.to_latin(old_name, 'ru').replace("'", '')
 
 
 class AlwaysRetryHandler(RetryHandler):

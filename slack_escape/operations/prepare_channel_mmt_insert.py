@@ -40,8 +40,9 @@ class Operation(AbstractSlackEscapeOperation):
         elif args.public:
             private = ''
 
+        name = self.get_channel_new_name(args.channel)
         print(
             f'mmctl channel create --team {args.team} '
-            f'--name "{args.channel}" --display-name "{args.channel}" {header} {purpose} '
+            f'--name "{name}" --display-name "{args.channel}" {header} {purpose} '
             f'{private}'
         )
