@@ -1,5 +1,6 @@
 import csv
 import json
+import logging
 
 from slack_escape.operations import AbstractSlackEscapeOperation
 
@@ -15,5 +16,6 @@ class Operation(AbstractSlackEscapeOperation):
             reader = csv.DictReader(csvfile)
             with self.get_users_path().open('w') as f:
                 f.write(json.dumps({line['userid']: line for line in reader}, ensure_ascii=False))
+        logging.info(f'save users to {self.get_users_path()}')
 
         self.get_users()
