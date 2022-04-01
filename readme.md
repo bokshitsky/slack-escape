@@ -49,27 +49,7 @@ https://music.yandex.ru/album/4784938/track/37699817
 python run.py load_channel -c hh-dev -l 1000 -d both
 ```
 
-Если скрипт пишет `no messages found` - значит вся история в прошлое скачана
-
-Скачивать можно в два направления.
-
-В прошлое с места последней остановки:
-
-```shell
-python run.py load_channel -c hh-dev -l 1000 -d down
-```
-
-В прошлое с места последней остановки:
-
-```shell
-python run.py load_channel -c hh-dev -l 1000 -d up
-```
-
-И в прошлое и в будущее с места последнй остановки
-
-```shell
-python run.py load_channel -c hh-dev -l 1000 -d both
-```
+Если скрипт пишет `no messages found` - значит вся история в прошлое и будущее (с момента последнего запуска) скачана
 
 Скачанные данные скрипт хранит в папке заданной переменной окружения `SLACK_EXPORT_ROOT_PATH` (поддерживается только абсолютный путь), либо `~/slack_export` в случае, если переменная не задана.
 

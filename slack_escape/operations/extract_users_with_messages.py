@@ -9,10 +9,6 @@ class Operation(AbstractSlackEscapeOperation):
 
     def configure_subparser(self, parser):
         self._add_token_param(parser)
-        # parser.add_argument('-c', dest='channel', help='channel')
-        # parser.add_argument('-w', dest='team', help='team')
-        # parser.add_argument('-pr', dest='private', action='store_true', help='force private')
-        # parser.add_argument('-pu', dest='public', action='store_true', help='force public')
 
     def execute_task(self, args):
         users = self.get_users()
@@ -29,5 +25,3 @@ class Operation(AbstractSlackEscapeOperation):
                         elif 'bot_id' in message:
                             bot_found.add(message['bot_id'])
 
-        print(len(users))
-        print(len(list(u for u in users if u in found)))

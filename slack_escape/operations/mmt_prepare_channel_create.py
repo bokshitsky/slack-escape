@@ -20,20 +20,24 @@ class Operation(AbstractSlackEscapeOperation):
         with self.get_slack_export_root().joinpath("channels_list.jsonl").open("r") as f:
             for line in f:
                 channel = json.loads(line)
-                if channel['name'] == args.channel:
-                    purpose_value = channel['purpose']['value']
-                    if purpose_value:
-                        purpose = f'--purpose "{purpose_value}"'
+                if channel['name'] != args.channel:
+                    continue
+                if channel['is_archived']:
+                    return
 
-                    if not args.public and not args.private and channel['is_private']:
-                        private = '--private'
+                purpose_value = channel['purpose']['value']
+                if purpose_value:
+                    purpose = f'--purpose "{purpose_value}"'
 
-                    topic = channel['topic']['value']
-                    if topic:
-                        header = f'--header "{topic}"'
-                    elif purpose_value:
-                        header = f'--header "{purpose_value}"'
-                    break
+                if not args.public and not args.private and channel['is_private']:
+                    private = '--private'
+
+                topic = channel['topic']['value']
+                if topic:
+                    header = f'--header "{topic}"'
+                elif purpose_value:
+                    header = f'--header "{purpose_value}"'
+                break
 
         if args.private:
             private = '--private'
