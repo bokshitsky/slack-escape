@@ -17,6 +17,7 @@ class Operation(AbstractSlackEscapeOperation):
                             help='scan direction')
 
     def execute_task(self, args):
+        logging.info(f'load channel {args.channel}')
         channel = self._get_channel(args)
         channel_root = self.get_channel_root(args.channel)
         if not channel_root.exists():

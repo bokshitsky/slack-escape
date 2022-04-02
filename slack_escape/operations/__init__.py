@@ -27,6 +27,7 @@ class AbstractSlackEscapeOperation:
         self.__slack_web_client = None
         self.__slack_export_root = None
         self.__old_to_new_users_mapping = None
+        self.__users = None
 
     @property
     def description(self):
@@ -83,8 +84,10 @@ class AbstractSlackEscapeOperation:
         return self.get_slack_export_root().joinpath('users.json')
 
     def get_users(self):
-        with self.get_users_path().open('r') as f:
-            return json.load(f)
+        if self.__users is None:
+            with self.get_users_path().open('r') as f:
+                self.__users = json.load(f)
+        return self.__users
 
     def get_channel_new_name(self, old_name):
         return self.to_latin(old_name)

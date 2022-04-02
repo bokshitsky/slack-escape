@@ -27,7 +27,7 @@ class Operation(AbstractSlackEscapeOperation):
             try:
                 file_location = files_root.joinpath(file_name)
                 if 'filetype' in file_task:
-                    file_location = file_location.with_suffix(file_task['filetype'])
+                    file_location = file_location.with_suffix('.' + file_task['filetype'])
 
                 logging.info(f'{index} processing {file_name}, dt={file_task["x-dt"]}')
                 if file_location.exists():

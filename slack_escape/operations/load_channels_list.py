@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 from collections import defaultdict
@@ -45,3 +46,11 @@ class Operation(AbstractSlackEscapeOperation):
         with user_to_channel_id_path.open('w') as f:
             json.dump(user_channel_ids, f, ensure_ascii=False)
         logging.info(f'filled {user_to_channel_id_path}')
+
+        with self.get_slack_export_root().joinpath('user_channels_current_presense.csv').open('w') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',')
+            writer.writerow(['channel', 'user', 'username', 'email', 'status'])
+            for user_id, channels in user_channel_names.items():
+                for channel in channels:
+                    user = self.get_users()[user_id]
+                    writer.writerow([user_id, channel, user['username'], user['email'], user['status']])
