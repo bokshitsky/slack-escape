@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 import os
@@ -25,6 +26,7 @@ class AbstractSlackEscapeOperation:
     def __init__(self):
         self.__slack_web_client = None
         self.__slack_export_root = None
+        self.__old_to_new_users_mapping = None
 
     @property
     def description(self):
@@ -85,7 +87,17 @@ class AbstractSlackEscapeOperation:
             return json.load(f)
 
     def get_channel_new_name(self, old_name):
+        return self.to_latin(old_name)
+
+    def to_latin(self, old_name):
         return cyrtranslit.to_latin(old_name, 'ru').replace("'", '')
+
+    def get_old_to_new_users_mapping(self):
+        if self.__old_to_new_users_mapping is None:
+            with self.get_slack_export_root().joinpath('users_mapping.csv').open('r') as csvfile:
+                reader = csv.DictReader(csvfile)
+                self.__old_to_new_users_mapping = {line['old_id']: line for line in reader}
+        return self.__old_to_new_users_mapping
 
 
 class AlwaysRetryHandler(RetryHandler):

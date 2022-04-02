@@ -1,5 +1,6 @@
 import csv
 import json
+from collections import defaultdict
 
 from slack_escape.operations import AbstractSlackEscapeOperation
 
@@ -11,16 +12,19 @@ class Operation(AbstractSlackEscapeOperation):
         pass
 
     def execute_task(self, args):
-        with self.get_slack_export_root().joinpath('users_mapping.csv').open('r') as csvfile:
-            reader = csv.DictReader(csvfile)
-            old_to_new_mapping = {line['old_id']: line for line in reader}
+        old_to_new_mapping = self.get_old_to_new_users_mapping()
 
         with self.get_slack_export_root().joinpath('user_to_channel_name.json').open('r') as f:
             user_to_channel_mapping = json.loads(f.read())
 
+        channel_users = defaultdict(list)
         for uid, channels in user_to_channel_mapping.items():
             user = old_to_new_mapping[uid]
             name = user['new_id']
             for channel in channels:
                 channel_name = self.get_channel_new_name(channel)
-                print(f'mmctl channel users add school:{channel_name} {name}')
+                channel_users[channel_name].append(name)
+
+        for channel, users in channel_users.items():
+            for user in users:
+                print(f'mmctl channel users add school:{channel} {user}')
