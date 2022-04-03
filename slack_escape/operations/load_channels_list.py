@@ -49,8 +49,9 @@ class Operation(AbstractSlackEscapeOperation):
 
         with self.get_slack_export_root().joinpath('user_channels_current_presense.csv').open('w') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
-            writer.writerow(['channel', 'user', 'username', 'email', 'status'])
+            writer.writerow(['user', 'channel', 'username', 'email', 'status'])
             for user_id, channels in user_channel_names.items():
                 for channel in channels:
                     user = self.get_users()[user_id]
                     writer.writerow([user_id, channel, user['username'], user['email'], user['status']])
+        logging.info(f'filled {self.get_slack_export_root().joinpath("user_channels_current_presense.csv")}')
