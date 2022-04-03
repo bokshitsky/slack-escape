@@ -7,7 +7,7 @@ from slack_escape.operations import AbstractSlackEscapeOperation
 
 
 class Operation(AbstractSlackEscapeOperation):
-    description = 'download channel'
+    description = 'load channel content and save to SLACK_EXPORT_ROOT/chennels/{channel_name}'
 
     def configure_subparser(self, parser):
         self._add_token_param(parser)
@@ -37,7 +37,7 @@ class Operation(AbstractSlackEscapeOperation):
         client = self.get_slack_web_client(args)
         try:
             with tmp_path.open("w+") as tmp:
-                for _ in range(100000):
+                while True:
                     response = client.conversations_history(channel=channel_id,
                                                             limit=args.limit,
                                                             cursor=cursor,

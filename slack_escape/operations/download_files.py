@@ -11,7 +11,7 @@ from slack_escape.operations import AbstractSlackEscapeOperation
 
 
 class Operation(AbstractSlackEscapeOperation):
-    description = 'download files'
+    description = 'download channel attachments parsing SLACK_EXPORT_ROOT/chennels/{channel_name}/*.jsonl files'
 
     def configure_subparser(self, parser):
         self._add_token_param(parser)
