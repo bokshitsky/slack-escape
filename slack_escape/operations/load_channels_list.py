@@ -47,14 +47,11 @@ class Operation(AbstractSlackEscapeOperation):
             json.dump(user_channel_ids, f, ensure_ascii=False)
         logging.info(f'filled {user_to_channel_id_path}')
 
-        with self.get_slack_export_root().joinpath('user_channels_current_presense.csv').open('w') as csvfile:
+        user_channel_current_state_file = self.get_slack_export_root().joinpath('channels_users_current_state.csv')
+        with user_channel_current_state_file.open('w') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
-            writer.writerow(['user', 'channel', 'username', 'email', 'status'])
+            writer.writerow(['user', 'channel'])
             for user_id, channels in user_channel_names.items():
                 for channel in channels:
-                    if not user_id in self.get_users():
-                        logging.warning(f"skip {user_id}")
-                        continue
-                    user = self.get_users()[user_id]
-                    writer.writerow([user_id, channel, user['username'], user['email'], user['status']])
-        logging.info(f'filled {self.get_slack_export_root().joinpath("user_channels_current_presense.csv")}')
+                    writer.writerow([user_id, channel])
+        logging.info(f'filled {self.get_slack_export_root().joinpath("channels_users_current_state.csv")}')

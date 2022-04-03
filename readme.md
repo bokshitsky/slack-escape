@@ -58,3 +58,7 @@ python run.py load_channel -c hh-dev -l 1000 -d both
 ```shell
 python run.py download_files -c hh-dev -cc 4
 ```
+
+## Выгрузить список участников каналов
+
+python run.py load_channels_list
