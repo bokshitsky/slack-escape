@@ -91,11 +91,13 @@ class Operation(AbstractSlackEscapeOperation):
             if search_string in text:
                 text = text.replace(search_string, f'@{user["new_id"]}')
 
-        # attachments = []
-        # for file in message.get('files', []):
-        #     attachments.append({
-        #         'path': f'channels/{channel_old}/files/{file["id"]}'}
-        #     )
+        attachments = []
+        for file in message.get('files', []):
+            if "filetype" not in file:
+                continue
+            attachments.append({
+                'path': f'channels/{channel_old}/files/{file["id"]}.{file["filetype"]}'}
+            )
 
         post = {
             "team": team,
@@ -113,14 +115,14 @@ class Operation(AbstractSlackEscapeOperation):
 
         if reactions:
             post['reactions'] = reactions
-        # if attachments:
-        #     post['attachments'] = attachments
-            # post['props']: {
-            #     # "attachments": [{
-            #     #     "pretext": "This is the attachment pretext.",
-            #     #     "text": "This is the attachment text."
-            #     # }]
-            # }
+        if attachments:
+            post['attachments'] = attachments
+            post['props']: {
+                "attachments": [{
+                    "pretext": "This is the attachment pretext.",
+                    "text": "This is the attachment text."
+                }]
+            }
         return post
 
     def convert_reactions(self, message, ts):
