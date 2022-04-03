@@ -95,9 +95,10 @@ class Operation(AbstractSlackEscapeOperation):
         for file in message.get('files', []):
             if "filetype" not in file:
                 continue
-            attachments.append({
-                'path': f'channels/{channel_old}/files/{file["id"]}.{file["filetype"]}'}
-            )
+            if self.get_channel_root(channel_old).joinpath(f'/files/{file["id"]}.{file["filetype"]}').exists():
+                attachments.append({
+                    'path': f'channels/{channel_old}/files/{file["id"]}.{file["filetype"]}'}
+                )
 
         post = {
             "team": team,
@@ -105,10 +106,6 @@ class Operation(AbstractSlackEscapeOperation):
             "user": user_id.lower(),
             "message": text,
             "props": {
-                # "attachments": [{
-                #     "pretext": "This is the attachment pretext.",
-                #     "text": "This is the attachment text."
-                # }]
             },
             "create_at": ts,
         }
@@ -119,7 +116,7 @@ class Operation(AbstractSlackEscapeOperation):
             post['attachments'] = attachments
             post['props']: {
                 "attachments": [{
-                    "pretext": "This is the attachment pretext.",
+                    "pretext": "Attachment",
                     "text": "This is the attachment text."
                 }]
             }
