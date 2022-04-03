@@ -95,7 +95,7 @@ class Operation(AbstractSlackEscapeOperation):
         for file in message.get('files', []):
             if "filetype" not in file:
                 continue
-            if self.get_channel_root(channel_old).joinpath(f'/files/{file["id"]}.{file["filetype"]}').exists():
+            if self.get_channel_root(channel_old).joinpath(f'files/{file["id"]}.{file["filetype"]}').exists():
                 attachments.append({
                     'path': f'channels/{channel_old}/files/{file["id"]}.{file["filetype"]}'}
                 )
