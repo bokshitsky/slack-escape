@@ -100,7 +100,7 @@ class Operation(AbstractSlackEscapeOperation):
         post = {
             "team": "school",
             "channel": channel_new,
-            "user": user_id,
+            "user": user_id.lower(),
             "message": text,
             "props": {
                 # "attachments": [{
@@ -129,7 +129,7 @@ class Operation(AbstractSlackEscapeOperation):
             for i, user in enumerate(reaction['users'], 1):
                 if user in self.get_old_to_new_users_mapping():
                     reactions.append({
-                        "user": self.get_old_to_new_users_mapping().get(user)['new_id'],
+                        "user": self.get_old_to_new_users_mapping().get(user)['new_id'].lower(),
                         "emoji_name": reaction['name'].partition('::')[0],
                         "create_at": ts + i,
                     })
