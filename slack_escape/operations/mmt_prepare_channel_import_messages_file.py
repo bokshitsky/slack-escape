@@ -35,7 +35,7 @@ class Operation(AbstractSlackEscapeOperation):
                         if not message:
                             break
 
-                        post = self.convert_message_to_post(channel, channel_new_name, message)
+                        post = self.convert_message_to_post(channel, channel_new_name, args.team, message)
                         has_thread = 'thread_ts' in message
                         message = None
 
@@ -53,7 +53,7 @@ class Operation(AbstractSlackEscapeOperation):
                                 if reply['x-reply-number'] == 1:
                                     continue
 
-                                reply_post = self.convert_message_to_post(channel, channel_new_name, reply)
+                                reply_post = self.convert_message_to_post(channel, channel_new_name, args.team, reply)
                                 if reply_post:
                                     replies.append(reply_post)
 
@@ -65,7 +65,7 @@ class Operation(AbstractSlackEscapeOperation):
                                 "post": post
                             }, ensure_ascii=False))
 
-    def convert_message_to_post(self, channel_old, channel_new, message):
+    def convert_message_to_post(self, channel_old, channel_new, team, message):
         if message['type'] != 'message' or message.get('subtype') == 'channel_join':
             return None
 
@@ -98,7 +98,7 @@ class Operation(AbstractSlackEscapeOperation):
         #     )
 
         post = {
-            "team": "school",
+            "team": team,
             "channel": channel_new,
             "user": user_id.lower(),
             "message": text,
