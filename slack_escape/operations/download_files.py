@@ -17,6 +17,7 @@ class Operation(AbstractSlackEscapeOperation):
         self._add_token_param(parser)
         parser.add_argument('-c', dest='channel', default=None, help='channel to load')
         parser.add_argument('-cc', dest='concurrency', default=4, type=int, help='download concurrency level')
+        parser.add_argument('-d', dest='dir', default='channels', help='directory')
 
     async def file_download_worker(self, index, args, files_root: Path, task_queue: Queue):
         token = self.get_slack_token(args)
@@ -58,14 +59,18 @@ class Operation(AbstractSlackEscapeOperation):
     async def main(self, args):
         queue = Queue(maxsize=10)
 
-        channel_root = self.get_channel_root(args.channel)
-        channel_files_root = self.get_channel_files_root(args, channel_root)
+        channels_root = self.get_slack_export_root().joinpath(args.dir)
+        channel_root = channels_root.joinpath(args.channel)
+        channel_files_root = channels_root.joinpath(args.channel).joinpath("files")
+        if not channel_files_root.exists():
+            channel_files_root.mkdir()
 
         for i in range(args.concurrency):
             asyncio.create_task(self.file_download_worker(i, args, channel_files_root, queue))
 
         files = list(channel_root.glob("*.jsonl"))
         for file in files:
+            logging.info(f'processing {file}')
             with file.open('r') as f:
                 for line in f:
                     message = json.loads(line)

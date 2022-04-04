@@ -59,6 +59,34 @@ python run.py load_channel -c hh-dev -l 1000 -d both
 python run.py download_files -c hh-dev -cc 4
 ```
 
+либо сразу для всех
+
+```shell
+for d in ~/slack_export/channels/* ; do
+  python run.py download_files -c `basename $d`
+done
+```
+
 ## Выгрузить список участников каналов
 
 python run.py load_channels_list
+
+## Выгрузить свои приватные переписки и файлы в них
+
+Отправьте самому себе в личку сообщение `BOKSH_MARKER` - это необходимо для распознавания ID текущего пользователя - наш тариф в слаке не возволяет выствить доступ к ID 
+
+```shell
+python run.py load_im
+```
+
+После этого утилиту можно запускать передавая USER_ID явно, взяв его из лога первого запуска
+
+```shell
+python run.py load_im -u U1R8HTQEQ
+```
+
+```shell
+for d in ~/slack_export/direct_messages/* ; do
+  python run.py download_files -c `basename $d` -d direct_messages
+done
+```
