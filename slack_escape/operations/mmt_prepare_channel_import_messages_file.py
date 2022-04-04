@@ -84,7 +84,12 @@ class Operation(AbstractSlackEscapeOperation):
         ts = self.convert_ts(message['ts'])
 
         reactions = self.convert_reactions(message, ts)
-        text = message.get('text', "")
+        text = message.get('text', '')
+        if not text and 'attachments' in message:
+            for attch in message['attachments']:
+                text = attch.get('text', '')
+                if text:
+                    break
 
         for old_id, user in self.get_old_to_new_users_mapping().items():
             search_string = f'<@{old_id}>'
