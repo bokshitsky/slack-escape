@@ -129,7 +129,7 @@ class Operation(AbstractSlackEscapeOperation):
                 if user in self.get_old_to_new_users_mapping():
                     reactions.append({
                         "user": self.get_old_to_new_users_mapping().get(user)['new_id'].lower(),
-                        "emoji_name": reaction['name'].partition('::')[0],
+                        "emoji_name": self.to_latin(reaction['name'].partition('::')[0]),
                         "create_at": ts + i,
                     })
         return reactions
