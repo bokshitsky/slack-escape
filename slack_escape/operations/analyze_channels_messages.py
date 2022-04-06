@@ -11,13 +11,14 @@ class Operation(AbstractSlackEscapeOperation):
 
     def configure_subparser(self, parser):
         self._add_token_param(parser)
+        parser.add_argument('-g', dest='glob', type=str, default='*', help='mmt team')
 
     def execute_task(self, args):
         users_by_channels = defaultdict(set)
         channels_by_users = defaultdict(set)
 
         external_profiles = defaultdict(dict)
-        for channel_path in self.get_slack_export_root().joinpath("channels").glob('*'):
+        for channel_path in self.get_slack_export_root().joinpath("channels").glob(args.glob):
             logging.info(channel_path)
             for messages_path in channel_path.glob('*.jsonl'):
                 with messages_path.open("r") as f:

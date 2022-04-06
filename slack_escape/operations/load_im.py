@@ -14,14 +14,13 @@ class Operation(AbstractSlackEscapeOperation):
         self._add_token_param(parser)
         parser.add_argument('-c', dest='channel', default=None, help='channel to load')
         parser.add_argument('-l', dest='limit', default=1000, help='limit messages')
-        parser.add_argument('-u', dest='current_user', default=None, help='current user id')
+        parser.add_argument('-u', dest='current_user', help='current user id')
         parser.add_argument('-d', dest='direction', default='both', choices=('up', 'down', 'both'),
                             help='scan direction')
 
     def execute_task(self, args):
         total_channels = self.load_all_channels(args)
-        current_user = (args.current_user if args.current_user is not None
-                        else self.guess_current_user_id(total_channels, args))
+        current_user = args.current_user
 
         dm_path = self.get_slack_export_root().joinpath('direct_messages')
         if not dm_path.exists():
@@ -42,19 +41,6 @@ class Operation(AbstractSlackEscapeOperation):
 
             if not any(channel_root.glob("*.jsonl")):
                 channel_root.rmdir()
-
-    def guess_current_user_id(self, total_channels, args):
-        for i, ch in enumerate(reversed(total_channels), 1):
-            logging.info(f'looking for USER_ID in channel {i}')
-            response = self.get_slack_web_client(args).conversations_history(channel=ch['id'], limit=3)
-            messages = response.get('messages')
-            if not messages:
-                continue
-            for m in messages:
-                if 'text' in m and "BOKSH_MARKER" in m['text']:
-                    logging.info(f'current USER_ID is {m["user"]}')
-                    return m['user']
-        raise RuntimeError('current user id not found')
 
     def load_all_channels(self, args):
         total_channels = []
